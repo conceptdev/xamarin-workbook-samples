@@ -1,0 +1,69 @@
+```json
+{"AgentType":"MacNet45","ManifestType":"com.xamarin.Inspector.Notebook"}
+```
+
+# Mastermind ⚫️⚪️🔴
+
+First, set up an array of four random numbers 1-4:
+
+```csharp
+int[] game = null;
+
+var rnd = new System.Random();
+int guess () {
+  return rnd.Next(0, 3) + 1;
+}
+int[] board () {
+  return new int[] {
+    guess(), guess(), guess(), guess()
+  };
+}
+```
+
+Now write an algorithm to check guesses against the random
+numbers in the array.
+
+```csharp
+NSColor[] play (params int[] attempt){
+  if (game == null) game = board();
+  int blacks=0, whites=0, reds=0;
+  var incorrect = new bool[4];
+  // blacks
+  for (var i = 0; i<4; i++){
+    if (attempt[i] == game[i])
+      blacks++;
+    else
+      incorrect[i] = true;
+  }
+  // whites and reds (buggy)
+  for (var j = 0; j<4; j++){
+    if (incorrect[j]) {
+      for (var k = 0; k<4; k++){
+        if (j == k) {/*nothing*/}
+        else
+        if (incorrect[k]) {
+          if (attempt[j] == game[k]) {
+            whites++; attempt[j] = -1;
+          }
+        }
+      }
+    }
+  }
+  reds = 4 - whites - blacks;
+
+  var result = new List<NSColor>();
+  while (blacks > 0) {result.Add(NSColor.Black); blacks--;}
+  while (whites > 0) {result.Add(NSColor.White); whites--;}
+  while (reds > 0) {result.Add(NSColor.Red); reds--;}
+  return result.ToArray();
+}
+```
+
+# To Play
+
+Enter your guesses like this `play (1,2,3,4)` (each number
+is between 1 and 4).
+
+* Black ⚫️ – Correct number and position
+* White ⚪️ – Correct number, incorrect position (buggy)
+* Red 🔴– Partly incorrect guess
