@@ -1,5 +1,5 @@
 ```json
-{"AgentType":"MacNet45","ManifestType":"com.xamarin.Inspector.Notebook"}
+{"platform":"MacNet45","uti":"com.xamarin.Workbook"}
 ```
 
 # Collections: Arrays
