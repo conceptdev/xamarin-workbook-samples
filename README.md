@@ -1,7 +1,7 @@
-Xamarin Inspector Samples
+Xamarin Workbook Samples
 =========
 
-Samples for the [Xamarin Inspector](https://developer.xamarin.com/guides/cross-platform/inspector/)
+Samples for the [Xamarin Workbooks](https://developer.xamarin.com/guides/cross-platform/workbooks/)
 interactive window, including:
 
 ## Magic 8 Ball
