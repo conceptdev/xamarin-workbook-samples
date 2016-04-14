@@ -24,7 +24,7 @@ static string MobileServiceAppId = ""; // your application key
 // https://msdn.microsoft.com/en-us/library/azure/jj677199.aspx
 
 static string GetAllUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem";
-static string GetUrl    = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem?$filter=(id%20eq%20%22{0}%22)";
+static string GetUrl    = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem?$filter=(id%20eq%20%27{0}%27)";
 static string AddUrl    = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem";
 static string UpdateUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem/{0}";
 static string DeleteUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem/{0}"; // yes, these are the same, the HTTP method used differentiates them
@@ -94,13 +94,15 @@ responseString
 
 ## Get a single item
 
-Individual items can be retrieved using a different REST URL. Copy a GUID from the previous response and set the id
+Individual items can be retrieved using a different REST URL. Copy a GUID from the previous response and set the id. Substitute the id in the querystring filter:
 
 ```csharp
-var id = @"23272641-2C5B-4DB3-9C1C-50F2AC037C05";
+var id = @"C066834E-4CA2-4804-B746-6DCD14B45CC5";
 var getUrl = String.Format(GetUrl, id);
 getUrl
 ```
+
+Now use this modified URL (including the filter) to retrieve a single row of data from the server:
 
 ```csharp
 responseString = "";
@@ -116,6 +118,8 @@ catch (System.Net.WebException e)
 	Console.WriteLine("X-ZUMO-APPLICATION failed:" + e.Message);
 }
 ```
+
+The responseString now contains the JSON representation of that data from the server:
 
 ```csharp
 responseString
