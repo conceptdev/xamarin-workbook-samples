@@ -20,9 +20,18 @@ This workbook shows how to access data stored in an **Azure Easy Table** (one of
 
 ## Configuration
 
-Sign-up for Azure and create an **App Service** that contains an **Easy Table**.
+Sign-up for Azure and create an **App Service** that contains an **Easy Table**. This will include creating a **Database **and then an **Easy Table** with a **Schema**. The settings used in this workbook are:
 
-Start with constants for the authentication credentials from the Azure portal. These are available in the **Dashboard** for an Azure Easy Table.
+**App Service:** xamarin-todo-cd
+**Database:** xamarin-todo-cd_db (this is not visible to the consuming API)
+**Table Name: **todo
+**Schema columns:** text (string), complete (bool)
+
+![](EasyTablesImages/schema.png)
+
+Start with the URL for the Azure App Service available in the Settings blade:
+
+![](EasyTablesImages/settings.png)
 
 ```csharp
 static string subdomain = "xamarin-todo-cd"; // your subdomain
@@ -52,7 +61,7 @@ WebClient AzureClient () {
 }
 ```
 
-The examples below assume you've configured the **Todo** demo (which creates a `TodoItem` table in your Azure service).
+The examples below assume you've manually created a **todo** Easy Table in your Azure service, and added `text` and `complete` columns to the schema.
 
 ## List Data
 
@@ -79,6 +88,10 @@ The responseString contains the data returned from Azure in a JSON-formatted str
 ```csharp
 responseString
 ```
+
+The data can also be viewed in the **Easy Tables** blade of the Azure portal:
+
+![](EasyTablesImages/records.png)
 
 ## Filter the list
 
@@ -140,11 +153,16 @@ When we are adding, updating, or deleting a record on the server, we need to tak
 The `Todo` class definition below contains C# properties, and a method that manually creates a JSON string.
 
 ```csharp
-class Todo 
+class Todo
 {
 	public string Id {get;set;}
 	public string Title {get;set;}
 	public bool IsDone {get;set;}
+
+	public string updatedAt="";
+	public string createdAt="";
+	public string version="";
+	public bool deleted=false;
 
 	public string ToJson()
 	{
@@ -152,7 +170,8 @@ class Todo
 		if (string.IsNullOrEmpty(Id))	// for inserting, do not specify primary key
 			json = @"{""text"":"""+Title+@""",""complete"":"+IsDone.ToString().ToLower()+@"}";
 		else // for updating, must provide primary key
-			json = @"{""id"":"""+Id+@""",""text"":"""+Title+@""",""complete"":"+IsDone.ToString().ToLower()+@"}";
+			json = @"{""id"":"""+Id+@""",""text"":"""+Title+@""",""complete"":"+IsDone.ToString().ToLower() + @"}";
+//				 + $",\"updatedAt\":\"{updatedAt}\",\"createdAt\":\"{createdAt}\",\"version\":\"{version}\",\"deleted\":{deleted.ToString().ToLower()}}}";
 		return json;
 	}
 }
@@ -170,9 +189,11 @@ Adding that object to the Azure Mobile Service can be done with a simple POST op
 try
 {
 	WebClient client = AzureClient();
+	t.Id = ""; // ensure no primary key exists
 	var payload = t.ToJson ();
 	var response = client.UploadString (AddUrl, "POST", payload); // PATCH
 	var responseString = response;
+
 
 	Console.WriteLine ("INSERT SUCCESS, now it has an Id => " + responseString);
 }
@@ -189,7 +210,7 @@ The `id` GUID is the primary key for this new row!
 Updating an existing row requires the primary key `id` to be passed in the querystring to identify the data being updated (and the JSON representing the new record being passed in the HTTP body).
 
 ```csharp
-t.Id = @"6854CAA6-C614-4B5F-9AAB-83AEC6C7FA7F"; // UPDATE THIS WITH AN ID FROM ABOVE
+t.Id = @"825b2f6e-95bd-4bbd-acff-656db772ed19"; // UPDATE THIS WITH AN ID FROM ABOVE
 var updateUrl = String.Format(UpdateUrl, t.Id);
 t.Title = "Test2";
 t.IsDone = true;
@@ -209,7 +230,7 @@ try
 }
 catch (System.Net.WebException e)
 {
-	Console.WriteLine ("X-ZUMO-APPLICATION update failed" + e.Message);
+	Console.WriteLine ("X-ZUMO-APPLICATION update failed " + e.Message);
 }
 ```
 
@@ -218,8 +239,9 @@ catch (System.Net.WebException e)
 A record can be deleted by its primary key `id`.
 
 ```csharp
-var deleteId = "6854CAA6-C614-4B5F-9AAB-83AEC6C7FA7F"; // UPDATE THIS WITH AN ID FROM ABOVE
-var deleteUrl = String.Format(UpdateUrl, deleteId);
+t.Id = "89956c36-10bb-4d50-a87b-3fe6141ad082"; // UPDATE THIS FROM THE LIST ABOVE
+
+var deleteUrl = String.Format(UpdateUrl, t.Id);
 deleteUrl
 ```
 
@@ -230,11 +252,10 @@ WebClient client = AzureClient();
 try
 {
 	var payload = t.ToJson();
-	var response = client.UploadString(deleteUrl, "DELETE", payload); // DELETE
-	// ...and wait...
+	var response = client.UploadString(deleteUrl, "DELETE", ""); // DELETE, don't post the JSON body
 	var responseString = response;
 
-	Console.WriteLine("DELETE Json response => " + (responseString==""?"success":responseString));
+	Console.WriteLine("DELETE Json response => " + responseString);
 }
 catch (System.Net.WebException e)
 {
