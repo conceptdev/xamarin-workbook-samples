@@ -245,4 +245,3 @@ catch (System.Net.WebException e)
 ```
 
 The first time a delete is executed the status code will be `200` to indicate the record was deleted. Subsequent calls to DELETE the same `id` will return a `404` status code, indicating that the record was "not found" for deletion.
-
