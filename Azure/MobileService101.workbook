@@ -4,6 +4,8 @@
 
 # Azure First Principles
 
+This workbook shows how to access data stored on **Azure Mobile Services** [manage.windowsazure.com](https://manage.windowsazure.com) (the old-style Azure) using simple REST principles. `WebClient` and some REST URLs is all that's required! The workbook will cover:
+
 * Configuration
 
 * List data
@@ -12,27 +14,31 @@
 
 * Insert data
 
+* Update data
+
 * Delete data
 
-Start with constants for the authentication credentials from the Azure portal:
+## Configuration
+
+Start with constants for the authentication credentials from the Azure portal. These are available in the **Dashboard** for an Azure Mobile Service.
 
 ```csharp
 static string subdomain = "xamarin-todo-cd2"; // your subdomain
 static string MobileServiceAppId = ""; // your application key
-
-// The REST API is described
-// https://msdn.microsoft.com/en-us/library/azure/jj677199.aspx
-
-static string GetAllUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem";
-static string GetUrl    = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem?$filter=(id%20eq%20%27{0}%27)";
-static string AddUrl    = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem";
-static string UpdateUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem/{0}";
-static string DeleteUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem/{0}"; // yes, these are the same, the HTTP method used differentiates them
 ```
 
-## List Data
+The REST API is [described on MSDN](https://msdn.microsoft.com/en-us/library/azure/jj677199.aspx)
 
-Using the WebClient we can manually set HTTP headers and access data stored in Azure.
+```csharp
+static string GetAllUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem";
+static string GetOneUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem?$filter=(id%20eq%20%27{0}%27)";
+static string AddUrl    = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem";
+static string UpdateUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem/{0}";
+static string DeleteUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem/{0}";
+// yes, some of these are the same, the HTTP method [GET, POST, DELETE] differentiates them in the code
+```
+
+Finally, this helper method creates a correctly configured `WebClient` that includes the headers required to access the Azure Mobile Service (especially the `MobileServiceAppId` which is specific to your instance):
 
 ```csharp
 using System.Net;
@@ -45,17 +51,23 @@ WebClient AzureClient () {
 }
 ```
 
+The examples below assume you've configured the **Todo** demo (which creates a `TodoItem` table in your Azure service).
+
+## List Data
+
+Using the WebClient we can manually set HTTP headers and access data stored in Azure.
+
 ```csharp
 var tasks = new List<Task>();
 var responseString = "";
-try 
+try
 {
 	WebClient client = AzureClient();
 	var response = client.DownloadData (GetAllUrl); // GET
 	// ...and wait...
 	responseString = System.Text.Encoding.UTF8.GetString(response);
-} 
-catch (System.Net.WebException e) 
+}
+catch (System.Net.WebException e)
 {
 	Console.WriteLine ("X-ZUMO-APPLICATION failed" + e.Message);
 }
@@ -69,18 +81,18 @@ responseString
 
 ## Filter the list
 
-The URL scheme also supports filtering, so to restrict the list to just completed tasks, add a filter and send the request
+The URL scheme also supports filtering, so to restrict the list to *just completed tasks*, add a filter and send the request again:
 
 ```csharp
-var filterUrl = GetAllUrl + "?$filter=(complete%20eq%20true)";
+var filterUrl = GetAllUrl + "?$filter=(complete%20eq%20true)"; // YOU COULD ALSO CHANGE THE FILTER
 responseString = "";
-try 
+try
 {
 	WebClient client = AzureClient();
 	var response = client.DownloadData (filterUrl); // GET
 	responseString = System.Text.Encoding.UTF8.GetString(response);
-} 
-catch (System.Net.WebException e) 
+}
+catch (System.Net.WebException e)
 {
 	Console.WriteLine("X-ZUMO-APPLICATION failed:" + e.Message);
 }
@@ -94,11 +106,11 @@ responseString
 
 ## Get a single item
 
-Individual items can be retrieved using a different REST URL. Copy a GUID from the previous response and set the id. Substitute the id in the querystring filter:
+Individual items can be retrieved using a different REST URL. Copy a GUID from the previous response into the `id` variable. This `id` is added to the filter in the URL:
 
 ```csharp
-var id = @"C066834E-4CA2-4804-B746-6DCD14B45CC5";
-var getUrl = String.Format(GetUrl, id);
+var id = @"C066834E-4CA2-4804-B746-6DCD14B45CC5"; // UPDATE THIS WITH AN ID FROM ABOVE
+var getUrl = String.Format(GetOneUrl, id);
 getUrl
 ```
 
@@ -106,57 +118,55 @@ Now use this modified URL (including the filter) to retrieve a single row of dat
 
 ```csharp
 responseString = "";
-try 
+try
 {
 	WebClient client = AzureClient();
 	var response = client.DownloadData (getUrl); // GET
 	// ...and wait...
 	responseString = System.Text.Encoding.UTF8.GetString(response);
-} 
-catch (System.Net.WebException e) 
+	Console.WriteLine ("GET => " + responseString);
+}
+catch (System.Net.WebException e)
 {
 	Console.WriteLine("X-ZUMO-APPLICATION failed:" + e.Message);
 }
-```
-
-The responseString now contains the JSON representation of that data from the server:
-
-```csharp
-responseString
 ```
 
 ## Converting C# to JSON
 
 When we are adding, updating, or deleting a record on the server, we need to take a C# object and convert it to a JSON representation to send in the HTTP message body.
 
-The Todo class definition below contains C# properties, and a method
+The `Todo` class definition below contains C# properties, and a method that manually creates a JSON string.
 
 ```csharp
-class Todo {
+class Todo 
+{
 	public string Id {get;set;}
 	public string Title {get;set;}
 	public bool IsDone {get;set;}
-	
+
 	public string ToJson()
 	{
 		var json = "";
 		if (string.IsNullOrEmpty(Id))	// for inserting, do not specify primary key
 			json = @"{""text"":"""+Title+@""",""complete"":"+IsDone.ToString().ToLower()+@"}";
 		else // for updating, must provide primary key
-			json = @"{""id"":"+Id+@",""text"":"""+Title+@""",""complete"":"+IsDone.ToString().ToLower()+@"}";
+			json = @"{""id"":"""+Id+@""",""text"":"""+Title+@""",""complete"":"+IsDone.ToString().ToLower()+@"}";
 		return json;
 	}
 }
-var t = new Todo {Title = "Test1", IsDone=false};
+var t = new Todo {Title = "Test row 1", IsDone=false};
 t.ToJson()
 ```
 
+(there are libraries such as System.Json and the Json.NET nuget package that can help with this conversion)
+
 ## Insert
 
-Adding that object to the Azure
+Adding that object to the Azure Mobile Service can be done with a simple POST operation passing the JSON string as the body of the HTTP request:
 
 ```csharp
-try 
+try
 {
 	WebClient client = AzureClient();
 	var payload = t.ToJson ();
@@ -164,35 +174,75 @@ try
 	var responseString = response;
 
 	Console.WriteLine ("INSERT SUCCESS, now it has an Id => " + responseString);
-} 
-catch (System.Net.WebException e) 
+}
+catch (System.Net.WebException e)
 {
 	Console.WriteLine ("X-ZUMO-APPLICATION add failed" + e.Message);
 }
 ```
 
-## Delete
+The `id` GUID is the primary key for this new row!
 
-Now delete it
+## Update
+
+Updating an existing row requires the primary key `id` to be passed in the querystring to identify the data being updated (and the JSON representing the new record being passed in the HTTP body).
 
 ```csharp
-t = new Todo {Id = "AC81D14B-FA00-43E5-9678-ADADFDD14D4F", Title = "Test1", IsDone=false};
+t.Id = @"6854CAA6-C614-4B5F-9AAB-83AEC6C7FA7F"; // UPDATE THIS WITH AN ID FROM ABOVE
+var updateUrl = String.Format(UpdateUrl, t.Id);
+t.Title = "Test2";
+t.IsDone = true;
+updateUrl
+```
 
+Using this URL, an HTTP PATCH request is made with the JSON representation of the updated data:
+
+```csharp
+try
+{
+	WebClient client = AzureClient();
+	var payload = t.ToJson ();
+	var response = client.UploadString (updateUrl, "PATCH", payload);
+	var responseString = response;
+	Console.WriteLine ("UPDATE SUCCESS, new record => " + responseString);
+}
+catch (System.Net.WebException e)
+{
+	Console.WriteLine ("X-ZUMO-APPLICATION update failed" + e.Message);
+}
+```
+
+## Delete
+
+A record can be deleted by its primary key `id`.
+
+```csharp
+var deleteId = "6854CAA6-C614-4B5F-9AAB-83AEC6C7FA7F"; // UPDATE THIS WITH AN ID FROM ABOVE
+var deleteUrl = String.Format(UpdateUrl, deleteId);
+deleteUrl
+```
+
+The HTTP DELETE method is used to delete the row from the service:
+
+```csharp
 WebClient client = AzureClient();
-try 
+try
 {
 	var payload = t.ToJson();
-	var response = client.UploadString(String.Format(DeleteUrl, t.Id), "DELETE", payload); // DELETE
+	var response = client.UploadString(deleteUrl, "DELETE", payload); // DELETE
 	// ...and wait...
 	var responseString = response;
 
 	Console.WriteLine("DELETE Json response => " + (responseString==""?"success":responseString));
 }
-catch (System.Net.WebException e) 
+catch (System.Net.WebException e)
 {
 	if (e.Message.IndexOf("404") > 0)
-		Console.WriteLine("Doesn't exist (previously deleted?) " + e.Message);	
+		Console.WriteLine("Doesn't exist (previously deleted?) " + e.Message);
 	else
 		Console.WriteLine("X-ZUMO-APPLICATION delete failed " + e.Message);
 }
 ```
+
+The first time a delete is executed the status code will be `200` to indicate the record was deleted. Subsequent calls to DELETE the same `id` will return a `404` status code, indicating that the record was "not found" for deletion.
+
