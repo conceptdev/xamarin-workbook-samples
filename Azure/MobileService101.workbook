@@ -1,0 +1,194 @@
+```json
+{"exec-mode":"default","platform":"MacNet45","uti":"com.xamarin.workbook","packages":[]}
+```
+
+# Azure First Principles
+
+* Configuration
+
+* List data
+
+* Filter data
+
+* Insert data
+
+* Delete data
+
+Start with constants for the authentication credentials from the Azure portal:
+
+```csharp
+static string subdomain = "xamarin-todo-cd2"; // your subdomain
+static string MobileServiceAppId = ""; // your application key
+
+// The REST API is described
+// https://msdn.microsoft.com/en-us/library/azure/jj677199.aspx
+
+static string GetAllUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem";
+static string GetUrl    = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem?$filter=(id%20eq%20%22{0}%22)";
+static string AddUrl    = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem";
+static string UpdateUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem/{0}";
+static string DeleteUrl = "https://" + subdomain + ".azure-mobile.net/tables/TodoItem/{0}"; // yes, these are the same, the HTTP method used differentiates them
+```
+
+## List Data
+
+Using the WebClient we can manually set HTTP headers and access data stored in Azure.
+
+```csharp
+using System.Net;
+WebClient AzureClient () {
+	WebClient client = new WebClient();
+	client.Headers.Add (HttpRequestHeader.Accept, "application/json");
+	client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
+	client.Headers.Add ("X-ZUMO-APPLICATION", MobileServiceAppId);
+	return client;
+}
+```
+
+```csharp
+var tasks = new List<Task>();
+var responseString = "";
+try 
+{
+	WebClient client = AzureClient();
+	var response = client.DownloadData (GetAllUrl); // GET
+	// ...and wait...
+	responseString = System.Text.Encoding.UTF8.GetString(response);
+} 
+catch (System.Net.WebException e) 
+{
+	Console.WriteLine ("X-ZUMO-APPLICATION failed" + e.Message);
+}
+```
+
+The responseString contains the data returned from Azure in a JSON-formatted string:
+
+```csharp
+responseString
+```
+
+## Filter the list
+
+The URL scheme also supports filtering, so to restrict the list to just completed tasks, add a filter and send the request
+
+```csharp
+var filterUrl = GetAllUrl + "?$filter=(complete%20eq%20true)";
+responseString = "";
+try 
+{
+	WebClient client = AzureClient();
+	var response = client.DownloadData (filterUrl); // GET
+	responseString = System.Text.Encoding.UTF8.GetString(response);
+} 
+catch (System.Net.WebException e) 
+{
+	Console.WriteLine("X-ZUMO-APPLICATION failed:" + e.Message);
+}
+```
+
+Now if we check the response, it is a shorter list!
+
+```csharp
+responseString
+```
+
+## Get a single item
+
+Individual items can be retrieved using a different REST URL. Copy a GUID from the previous response and set the id
+
+```csharp
+var id = @"23272641-2C5B-4DB3-9C1C-50F2AC037C05";
+var getUrl = String.Format(GetUrl, id);
+getUrl
+```
+
+```csharp
+responseString = "";
+try 
+{
+	WebClient client = AzureClient();
+	var response = client.DownloadData (getUrl); // GET
+	// ...and wait...
+	responseString = System.Text.Encoding.UTF8.GetString(response);
+} 
+catch (System.Net.WebException e) 
+{
+	Console.WriteLine("X-ZUMO-APPLICATION failed:" + e.Message);
+}
+```
+
+```csharp
+responseString
+```
+
+## Converting C# to JSON
+
+When we are adding, updating, or deleting a record on the server, we need to take a C# object and convert it to a JSON representation to send in the HTTP message body.
+
+The Todo class definition below contains C# properties, and a method
+
+```csharp
+class Todo {
+	public string Id {get;set;}
+	public string Title {get;set;}
+	public bool IsDone {get;set;}
+	
+	public string ToJson()
+	{
+		var json = "";
+		if (string.IsNullOrEmpty(Id))	// for inserting, do not specify primary key
+			json = @"{""text"":"""+Title+@""",""complete"":"+IsDone.ToString().ToLower()+@"}";
+		else // for updating, must provide primary key
+			json = @"{""id"":"+Id+@",""text"":"""+Title+@""",""complete"":"+IsDone.ToString().ToLower()+@"}";
+		return json;
+	}
+}
+var t = new Todo {Title = "Test1", IsDone=false};
+t.ToJson()
+```
+
+## Insert
+
+Adding that object to the Azure
+
+```csharp
+try 
+{
+	WebClient client = AzureClient();
+	var payload = t.ToJson ();
+	var response = client.UploadString (AddUrl, "POST", payload); // PATCH
+	var responseString = response;
+
+	Console.WriteLine ("INSERT SUCCESS, now it has an Id => " + responseString);
+} 
+catch (System.Net.WebException e) 
+{
+	Console.WriteLine ("X-ZUMO-APPLICATION add failed" + e.Message);
+}
+```
+
+## Delete
+
+Now delete it
+
+```csharp
+t = new Todo {Id = "AC81D14B-FA00-43E5-9678-ADADFDD14D4F", Title = "Test1", IsDone=false};
+
+WebClient client = AzureClient();
+try 
+{
+	var payload = t.ToJson();
+	var response = client.UploadString(String.Format(DeleteUrl, t.Id), "DELETE", payload); // DELETE
+	// ...and wait...
+	var responseString = response;
+
+	Console.WriteLine("DELETE Json response => " + (responseString==""?"success":responseString));
+}
+catch (System.Net.WebException e) 
+{
+	if (e.Message.IndexOf("404") > 0)
+		Console.WriteLine("Doesn't exist (previously deleted?) " + e.Message);	
+	else
+		Console.WriteLine("X-ZUMO-APPLICATION delete failed " + e.Message);
+}
+```
