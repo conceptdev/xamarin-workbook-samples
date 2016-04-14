@@ -20,14 +20,18 @@ This workbook shows how to access data stored in an **Azure Easy Table** (one of
 
 ## Configuration
 
-Sign-up for Azure and create an **App Service** that contains an **Easy Table**. This will include creating a **Database **and then an **Easy Table** with a **Schema**. The settings used in this workbook are:
+Sign-up for Azure and create an **App Service** that contains an **Easy Table**. This will include creating a **Database** and then an **Easy Table** with a **Schema**. The settings used in this workbook are:
 
 **App Service:** xamarin-todo-cd
 **Database:** xamarin-todo-cd_db (this is not visible to the consuming API)
-**Table Name: **todo
+**Table Name:** todo
 **Schema columns:** text (string), complete (bool)
 
+### Schema Config
+
 ![](EasyTablesImages/schema.png)
+
+### Settings
 
 Start with the URL for the Azure App Service available in the Settings blade:
 
@@ -37,7 +41,7 @@ Start with the URL for the Azure App Service available in the Settings blade:
 static string subdomain = "xamarin-todo-cd"; // your subdomain
 ```
 
-The REST API is similar to the old-style Azure Mobile Service [described on MSDN](https://msdn.microsoft.com/en-us/library/azure/jj677199.aspx)
+The REST API is similar to the old-style Azure Mobile Service [described on MSDN](https://msdn.microsoft.com/en-us/library/azure/jj677199.aspx) - use the name of the **Easy Table** in the URL (eg. `todo` in this case):
 
 ```csharp
 static string GetAllUrl = "https://" + subdomain + ".azurewebsites.net/tables/todo";
@@ -48,7 +52,7 @@ static string DeleteUrl = "https://" + subdomain + ".azurewebsites.net/tables/to
 // yes, some of these are the same, the HTTP method [GET, POST, DELETE] differentiates them in the code
 ```
 
-Finally, this helper method creates a correctly configured `WebClient` that includes the headers required to access the Azure Easy Tablr (especially the `MobileServiceAppId` which is specific to your instance):
+Finally, this helper method creates a correctly configured `WebClient` that includes the headers required to access the Azure Easy Table:
 
 ```csharp
 using System.Net;
