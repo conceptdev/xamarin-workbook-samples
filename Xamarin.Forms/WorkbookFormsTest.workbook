@@ -1,0 +1,75 @@
+```json
+{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":[{"id":"Xamarin.Forms","version":"2.2.0.31"}]}
+```
+
+# Xamarin.Forms Workbook test
+
+## A little hack to demo Xamarin.Forms on iOS with Workbooks...
+
+1. Start by importing the Nugets for Xamarin.Forms and the iOS Platform Renderers
+
+```csharp
+#r "Xamarin.Forms.Platform.iOS"
+#r "Xamarin.Forms.Core"
+#r "Xamarin.Forms.Xaml"
+#r "Xamarin.Forms.Platform"
+```
+
+2. We need `using` statements too:
+
+```csharp
+using Xamarin.Forms;
+using Xamarin.Forms.Platform.iOS;
+```
+
+3. Set up a simple page with an exposed property for us to edit:
+
+```csharp
+public class MyPage : ContentPage 
+{
+	public Label Hi {get;set;}
+	public MyPage () 
+	{
+		Title = "A test";
+		
+		Hi = new Label {Text = "Hello, Workbooks"};
+		
+		var s = new StackLayout{Children = {Hi}};
+		
+		Content = s;
+	}
+}
+```
+
+4. Ok great - but we can’t see anything! Oh, we need to bootstrap the Xamarin.Forms app object too:
+
+```csharp
+public class App : Application
+{
+	public MyPage MP {get;set;}
+	public App ()
+	{
+		MP = new MyPage();
+		MainPage = new NavigationPage (MP);
+	}
+}
+```
+
+5. Now - here comes the “hack” - sneakily bypass requiring the `FormsApplicationDelegate` subclass (thank goodness it’s [open source](https://github.com/xamarin/Xamarin.Forms/blob/master/Xamarin.Forms.Platform.iOS/FormsApplicationDelegate.cs "open source")) and just set the iOS root view controller directly:
+
+```csharp
+Xamarin.Forms.Forms.Init();
+var a = new App();
+KeyWindow.RootViewController = a.MainPage.CreateViewController();
+```
+
+⚠️ *YMMV with some Xamarin.Forms features when hacking forms to start-up like this - *\
+*BE WARNED!*
+
+6. To prove it works, modify properties and hit `<return>`:
+
+```csharp
+a.MP.Title = "Another test";
+a.MP.Hi.Text = "Goodbye";
+```
+
