@@ -1,5 +1,5 @@
 ```json
-{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":[{"id":"Newtonsoft.Json","version":"8.0.3"},{"id":"Xamarin.Forms","version":"2.2.0.31"}]}
+{"exec-mode":"default","platform":"MacNet45","uti":"com.xamarin.workbook","packages":[{"id":"Newtonsoft.Json","version":"8.0.3"},{"id":"Xamarin.Forms","version":"2.2.0.31"}]}
 ```
 
 # Add a Nuget to a Workbook
@@ -34,9 +34,7 @@ For this workbook, **Json.NET** was chosen, which results in the #r clause being
 
 Check the workbook’s source to see how this is persisted (if you’re curious):
 
-`\`\`\`json\
-{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":\[{"id":"Newtonsoft.Json","version":"8.0.3"}\]}\
-\`\`\``
+`{"platform":"iOS","uti":"com.xamarin.workbook","packages":[{"id":"Newtonsoft.Json","version":"8.0.3"}]}`
 
 2) To write some code using the Nuget package, first add a `using` statement:
 
