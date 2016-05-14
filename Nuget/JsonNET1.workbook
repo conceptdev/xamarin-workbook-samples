@@ -1,0 +1,106 @@
+```json
+{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":[{"id":"Newtonsoft.Json","version":"8.0.3"},{"id":"Xamarin.Forms","version":"2.2.0.31"}]}
+```
+
+# Add a Nuget to a Workbook
+
+This workbook shows how to include and use a Nuget package from a workbook. The demo uses Json.NET to serialize and de-serialize a C# class.
+
+* Add the Json.NET Nuget
+
+* Create the C# object
+
+* Serialize & Deserialize using Json.NET
+
+...borrowing some JSON from James Montemagno’s [sample](https://github.com/jamesmontemagno/MonkeysApp-AppIndexing "Monkey Sample App").  
+
+## Add Json.NET
+
+1) Start by adding a Nugets — choose **File > Add Package...** to choose Nuget packages to reference. 
+
+⚠️ *No need to follow these instructions - the package is already referenced by this workbook*
+
+![](Screenshots/add-package-sml.png)
+
+and then
+
+![](Screenshots/add-newtonsoft-sml.png)
+
+For this workbook, **Json.NET** was chosen, which results in the #r clause being added automatically:
+
+```csharp
+#r "Newtonsoft.Json"
+```
+
+Check the workbook’s source to see how this is persisted (if you’re curious):
+
+`\`\`\`json\
+{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":\[{"id":"Newtonsoft.Json","version":"8.0.3"}\]}\
+\`\`\``
+
+2) To write some code using the Nuget package, first add a `using` statement:
+
+```csharp
+using Newtonsoft.Json;
+```
+
+## Create C# object
+
+3) Now setup a C# class and some test data...
+
+```csharp
+public class Monkey
+{
+	public string Name { get; set; }
+	public string Location { get; set; }
+	public string Details { get; set; }
+	public string Image { get; set; }
+	public int Population { get; set; }
+}
+var monkey1 = new Monkey{Name="Blue Monkey", Location="Central and East Africa"};
+var monkey2 = new Monkey{Name="Golden Lion Tamarin", Location="Brazil"};
+var monkeyList = new List<Monkey> {monkey1, monkey2};
+```
+
+## Serialize to JSON
+
+4) Using the `JsonConvert` class from the Nuget package, the C# data can be converted to JSON with a single line of code!
+
+```csharp
+var toJson = JsonConvert.SerializeObject(monkeyList);
+```
+
+## Deserialize from JSON
+
+5) To test deserialization, here is a more complete JSON string (thanks to James Montemagno’s sample [here](https://raw.githubusercontent.com/jamesmontemagno/MonkeysApp-AppIndexing/master/MonkeysApp/monkeydata.json)):
+
+```csharp
+var fromJson = @"[{""Name"":""Baboon"",""Location"":""Africa & Asia"",""Details"":""Baboons are African and Arabian Old World monkeys belonging to the genus Papio, part of the subfamily Cercopithecinae."",""Image"":""http://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Portrait_Of_A_Baboon.jpg/314px-Portrait_Of_A_Baboon.jpg"",""Population"":10000},
+{""Name"":""Capuchin Monkey"",""Location"":""Central & South America"",""Details"":""The capuchin monkeys are New World monkeys of the subfamily Cebinae. Prior to 2011, the subfamily contained only a single genus, Cebus."",""Image"":""http://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Capuchin_Costa_Rica.jpg/200px-Capuchin_Costa_Rica.jpg"",""Population"":23000}]";
+```
+
+6) Converting a JSON string back to C# objects is also a one-liner - and results in a C# collection that can be utilized in app code:
+
+```csharp
+var monkeys = JsonConvert.DeserializeObject<List<Monkey>>(fromJson);
+```
+
+The example above uses a JSON string, but the data could also be loaded from a local file or an internet download (either a file reference or REST web service endpoint).
+
+## One More Thing...
+
+To load the JSON string from a remote website, just add `System.Net` to the workbook
+
+```csharp
+using System.Net;
+```
+
+and then use WebClient to download it before serialization
+
+```csharp
+WebClient client = new WebClient();
+var response = client.DownloadData ("https://raw.githubusercontent.com/jamesmontemagno/MonkeysApp-AppIndexing/master/MonkeysApp/monkeydata.json"); // GET
+var json = System.Text.Encoding.UTF8.GetString(response);
+var monkeys = JsonConvert.DeserializeObject<List<Monkey>>(json);
+```
+

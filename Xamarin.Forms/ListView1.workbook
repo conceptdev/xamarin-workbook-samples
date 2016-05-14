@@ -117,4 +117,3 @@ a.Page.Title = "Monkeys!";
 (for static-content view)
 
 ![finished app](Screenshots/ListView1.png)
-
