@@ -1,5 +1,5 @@
 ```json
-{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":[{"id":"Newtonsoft.Json","version":"8.0.3"},{"id":"Xamarin.Forms.Dynamic","version":"0.1.18-pre"},{"id":"Xamarin.Forms","version":"2.2.0.31"}]}
+{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":[{"id":"Newtonsoft.Json","version":"8.0.3"},{"id":"Xamarin.Forms","version":"2.2.0.31"},{"id":"Xamarin.Forms.Dynamic","version":"0.1.18-pre"}]}
 ```
 
 # Xamarin.Forms XAML Workbook test
@@ -82,4 +82,3 @@ var l = a.XamlPage.FindByName<Xamarin.Forms.Label>("helloLabel");
 l.Text = "Updated by the Workbook!";
 a.XamlPage.Content
 ```
-
