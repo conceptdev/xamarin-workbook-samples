@@ -1,0 +1,74 @@
+```json
+{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":[{"id":"Newtonsoft.Json","version":"8.0.3"},{"id":"Xamarin.Forms","version":"2.2.0.31"},{"id":"Xamarin.Forms.Dynamic","version":"0.1.18-pre"}]}
+```
+
+# Xamarin.Forms XAML Workbook test
+
+## Another little hack to demo Xamarin.Forms on iOS with Workbooks...
+
+1. Start by importing the Nugets for Xamarin.Forms and the iOS Platform Renderers
+
+```csharp
+#r "Xamarin.Forms.Platform.iOS"
+#r "Xamarin.Forms.Core"
+#r "Xamarin.Forms.Xaml"
+#r "Xamarin.Forms.Platform"
+```
+
+And for this hack to work, kzu’s [Dynamic Xamarin Forms](http://www.cazzulino.com/dynamic-forms.html) Nuget (which contains the magic to load XAML from a string):
+
+```csharp
+#r "Xamarin.Forms.Dynamic"
+```
+
+1. Add the `using` statements next:
+
+```csharp
+using Xamarin.Forms;
+using Xamarin.Forms.Platform.iOS;
+```
+
+1. Now write up a simple XAML `ContentPage`to render on iOS:
+
+```csharp
+static string xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    x:Class=""XamlPage""
+    Title=""Xaml Text"" Padding=""40"">
+    <Label Text=""Hello from XAML"" x:Name=""helloLabel""/>
+</ContentPage>";
+```
+
+1. Now for the hack: bootstrap the Xamarin.Forms app object and and for the main page class, use kzu’s magic to create it from the `xaml` string:
+
+```csharp
+public class App : Application
+{
+	public ContentPage XamlPage {get;set;}
+	public App ()
+	{
+		XamlPage = new ContentPage();
+		XamlPage.LoadFromXaml (xaml); // hack :)
+
+		MainPage = XamlPage;
+	}
+}
+```
+
+1. Finally, use the other “hack” - sneakily bypass requiring the `FormsApplicationDelegate` subclass - and set the iOS root view controller directly:
+
+```csharp
+Xamarin.Forms.Forms.Init();
+var a = new App();
+KeyWindow.RootViewController = a.MainPage.CreateViewController();
+```
+
+⚠️ *YMMV with some Xamarin.Forms features when hacking forms to start-up like this*
+
+```csharp
+var l = a.XamlPage.FindByName<Xamarin.Forms.Label>("helloLabel");
+//l.Text = "Updated by Workbook!";
+((a.XamlPage.Content) as Label).Text = "Updated by Workbook";
+l
+```
