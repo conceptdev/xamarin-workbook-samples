@@ -1,0 +1,198 @@
+```json
+{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":[]}
+```
+
+# UITableView I
+
+One of the most common controls in iOS is the table view - it renders a fast scrolling list of data and can be heavily customized. This workbook demonstrates how to display data in a table view.
+
+* Setup
+
+* Showing Some Data
+
+* Animated Insertion & Deletion
+
+* 
+
+First, some setup. Grab a reference to the iOS root `ViewController` (in app code, a table view might be added to any view controller):
+
+```csharp
+var vc = KeyWindow.RootViewController;
+```
+
+## Setup
+
+Now instantiate a `UITableView`control. Notice how the offset and size are all zero - by default the table has no size...
+
+```csharp
+var tableView = new UITableView();
+```
+
+Table views frequently occupy the entire screen, so set the `Frame`for the table to match the `Bounds`of the screen. The tableView will now have a `Width`and `Height`:
+
+```csharp
+tableView.Frame = UIScreen.MainScreen.Bounds;
+```
+
+The table is still not visible on the screen - to make that happen we need to add the control to the root view controller’s `View`, with the `AddSubview`method. When this method is called the table will be visible on the screen (despite having no data, an empty table view displays gridlines based on the default row height):
+
+```csharp
+vc.View.AddSubview(tableView);
+```
+
+In your app code, the AddSubview command is usually in the `ViewDidLoad` method. Alternatively, you can drag-and-drop a `UITableView`control onto a storyboard and give it a name, which means you do not have to do the above steps in code.
+
+## Showing Some Data
+
+```csharp
+var data = new List<string> {"eeny", "meany", "miney", "mo"};
+```
+
+```csharp
+public class MySource : UITableViewSource 
+{
+	string identifier = "mycell";
+	public List<string> Data {get;set;} = new List<string>(); // C# 6
+	public override nint RowsInSection (UITableView tableview, nint section)
+	{ 
+		return Data.Count; 
+	}
+	public override UITableViewCell GetCell (UITableView tableView, NSIndexPath indexPath)
+	{
+		UITableViewCell cell = tableView.DequeueReusableCell (identifier);
+		string item = Data[indexPath.Row];
+
+		if (cell == null)
+		{ cell = new UITableViewCell (UITableViewCellStyle.Default, identifier); }
+
+		cell.TextLabel.Text = item;
+		return cell;
+	}
+}
+```
+
+```csharp
+var source = new MySource();
+source.Data = data;
+tableView.Source = source;
+tableView.ReloadData();
+```
+
+What happens when a new item is added to the data list?
+
+```csharp
+data.Add("d'oh");
+```
+
+Sadly, it does not automatically appear on the screen. We can force the table view to re-load the entire list by calling `ReloadData`:
+
+```csharp
+tableView.ReloadData();
+```
+
+### Animated Insertion & Deletion
+
+There is a nicer way to add rows - which works for adding in the middle of the table as well as at the end. To demonstrate, insert two new rows at position 2 and 4 in the list so that they appear with an animation. The first step is to create `NSIndexPath`objects that refer to the new rows we’re inserting:
+
+```csharp
+var ip1 = NSIndexPath.FromRowSection(2, 0); // row 2 section 0
+var ip2 = NSIndexPath.FromRowSection(4, 0); // row 4 section 0
+```
+
+Instead of using `ReloadData`to refresh the entire list, it is possible to get the table to dynamically add the new rows with the code below. Notice how the modifications to both the underlying `data` and the `tableView` are contained inside a `BeginUpdates`/`EndUpdates` block:
+
+```csharp
+tableView.BeginUpdates(); 
+// update the underlying data source
+data.Insert (2, "a deer");
+data.Insert (4, "ray");
+// tell the UITableView about the updates with NSIndexPath objects
+tableView.InsertRows(new [] {ip1, ip2}, UITableViewRowAnimation.Automatic);
+tableView.EndUpdates();
+```
+
+It is only after `EndUpdates` is called that the changes are reflected in the user interface. All the changes made to the `data` and the `tableView` must match (ie. the number of rows in each must be identical before the block and after the block).
+
+Notice how the new rows animate into place. The `DeleteRows`method can also be used to remove a row. This is commented out below, since running the workbook over and over will remove all the data! Uncomment and execute this block to see a row removal animation.
+
+```csharp
+var ip2 = NSIndexPath.FromRowSection(3, 0);
+/*
+tableView.BeginUpdates();
+data.RemoveAt (3);
+tableView.DeleteRows(new [] {ip1, ip2}, UITableViewRowAnimation.Automatic);
+tableView.EndUpdates();
+*/
+```
+
+## Customizing Each Row
+
+Each row that is displayed is supplied to the table view from the source’s `GetCell` method. 
+
+### Built-in Layouts
+
+In the updated source class below, the cell is now `UITableViewCellStyle.Subtitle` (instead of `Default`) and the code sets the additional `cell.DetailTextLabel.Text` property.
+
+```csharp
+public class DetailSource : MySource 
+{
+	string identifier = "newcell";
+	public override UITableViewCell GetCell (UITableView tableView, NSIndexPath indexPath)
+	{
+		UITableViewCell cell = tableView.DequeueReusableCell (identifier);
+		string item = Data[indexPath.Row];
+
+		if (cell == null)
+		{ cell = new UITableViewCell (UITableViewCellStyle.Subtitle, identifier); }
+
+		cell.TextLabel.Text = item;
+		cell.DetailTextLabel.Text = $"{item.Length} characters"; // C# 6
+		return cell;
+	}
+}
+```
+
+To use this new source with our table, create an instance, assign the data list, and tell the `tableView` to use this as its `Source`:
+
+```csharp
+source = new DetailSource();
+source.Data = data;
+tableView.Source = source;
+tableView.ReloadData();
+```
+
+The table rows now contain two rows of text! `UITableViewCellStyle` can also be set to `Value1` and `Value2` which display the text in different ways.
+
+It is also possible to display an image
+
+```csharp
+public class ImageSource : MySource 
+{
+	string identifier = "newcell";
+	public override UITableViewCell GetCell (UITableView tableView, NSIndexPath indexPath)
+	{
+		UITableViewCell cell = tableView.DequeueReusableCell (identifier);
+		string item = Data[indexPath.Row];
+
+		if (cell == null)
+		{ cell = new UITableViewCell (UITableViewCellStyle.Subtitle, identifier); }
+
+		cell.TextLabel.Text = item;
+		cell.DetailTextLabel.Text = $"{item.Length} characters"; // C# 6
+		cell.ImageView.Image = UIImage.FromFile("workicon.png"); // TODO
+		return cell;
+	}
+}
+```
+
+Now just configure this new source and assign to the table view:
+
+```csharp
+source = new ImageSource();
+source.Data = data;
+tableView.Source = source;
+tableView.ReloadData();
+```
+
+### Custom Cell Layout
+
