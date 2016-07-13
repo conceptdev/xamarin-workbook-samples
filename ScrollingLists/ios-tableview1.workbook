@@ -1,6 +1,8 @@
-```json
-{"exec-mode":"default","platform":"iOS","uti":"com.xamarin.workbook","packages":[]}
-```
+---
+uti: com.xamarin.workbook
+platform: iOS
+packages: []
+---
 
 # UITableView I
 
@@ -431,7 +433,7 @@ tableView.Source = source;    // give it to the table view (replaces the old one
 tableView.ReloadData();       // reload the data, cells now also display an image
 ```
 
-The action looks like this when revealed by a swipe on the row. This example is grey because `UITableViewRowActionStyle.Normal` was specified in the code. 
+The action looks like this when revealed by a swipe on the row. This example is grey because `UITableViewRowActionStyle.Normal` was specified in the code.
 
 ![](actionsource.png)
 
@@ -443,20 +445,20 @@ There is another more complex way to interact with tables: edit mode. Edit mode 
 
 Implementing edit mode requires overriding a number of methods in the source class:
 
-* **CanEditRow **– whether each row can be edited. Return false to prevent both swipe-to-delete and deletion while in edit mode.
+* \*\*CanEditRow \*\*– whether each row can be edited. Return false to prevent both swipe-to-delete and deletion while in edit mode.
 
-* **CanMoveRow **– return true to enable the move ‘handle’ or false to prevent moving.
+* \*\*CanMoveRow \*\*– return true to enable the move ‘handle’ or false to prevent moving.
 
-* **EditingStyleForRow **– when the table is in edit mode, the return value from this method determines whether the cell displays the red deletion icon or the green add icon. Return UITableViewCellEditingStyle.None if the row should not be editable.
+* \*\*EditingStyleForRow \*\*– when the table is in edit mode, the return value from this method determines whether the cell displays the red deletion icon or the green add icon. Return UITableViewCellEditingStyle.None if the row should not be editable.
 
-* **MoveRow **– called when a row is moved so that the underlying data structure can be modified to match the data as it is displayed in the table.
+* \*\*MoveRow \*\*– called when a row is moved so that the underlying data structure can be modified to match the data as it is displayed in the table.
 
 * **TitleForDeleteConfirmation** – optional custom text for the delete button.
 
 * **CommitEditingStyle** – code to apply changes to the underlying data when an edit is complete (ie. if a row is deleted).
 
 ```csharp
-public class EditSource : MySource 
+public partial class EditSource : MySource 
 {
 	string identifier = "editcell";
 	public override UITableViewCell GetCell (UITableView tableView, NSIndexPath indexPath)
@@ -502,6 +504,12 @@ public class EditSource : MySource
 	{   // Optional - default text is 'Delete'
 		return "Trash it!";
 	}
+}
+```
+
+```csharp
+public partial class EditSource : MySource 
+{
 	public override void CommitEditingStyle (UITableView tableView, UITableViewCellEditingStyle editingStyle, Foundation.NSIndexPath indexPath)
 	{
 		switch (editingStyle) // in case others are implemented
