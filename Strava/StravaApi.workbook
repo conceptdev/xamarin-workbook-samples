@@ -1,0 +1,290 @@
+---
+uti: com.xamarin.workbook
+platform: MacMobile
+packages:
+- id: Newtonsoft.Json
+  version: 9.0.1
+---
+
+# Strava API Workbook
+
+This workbook explains the steps to access the Strava fitness app API.
+
+1. **Getting Started** - configure your [Strava API account](https://www.strava.com/settings/api "Strava API settings"), create some helper classes, and test against your own data.
+
+2. **OAuth Login** - use a web browser to initiate OAuth login and retrieve an authentication token ![](ConnectWithStrava.png "Connect with Strava")
+
+3. **List Activities** - use the OAuth token to access logged-in user’s activities.
+
+4. **Get Single Activity** - use the OAuth token to access a single activity.
+
+Once the OAuth exchange is complete, the resulting token can be used to access all the API endpoints (depending on the scope requested).
+
+## 1.Getting Started
+
+First, register at [strava.com/settings/api](https://www.strava.com/settings/api "Strava.com"). The site will show the settings like this:
+
+![Strava API Settings](strava-api-sml.png)
+
+Copy the details (click *show* to revel the secret and token) into the fields below:
+
+```csharp
+var clientId =     "Client ID HERE";
+var clientSecret = "Client Secret HERE";
+var token =        "Your Access Token HERE";    // allows access to "YOUR public data only"
+
+// refer to the API documentation before changing these OAuth constants
+var redirectUrl = "http://localhost";
+var scope = "view_private"; // default is <blank> which means "read only", or "write" which allows updating data
+```
+
+### Web Service Helpers
+
+Import the Json.Net NuGet package and create some helpers to call the Strava API (including the endpoint URLs):
+
+```csharp
+#r "Newtonsoft.Json"
+using Newtonsoft.Json;
+using System.Net;
+
+WebClient StravaClient (string auth = null) {
+	WebClient client = new WebClient();
+	client.Headers.Add (HttpRequestHeader.Accept, "application/json");
+	if (!String.IsNullOrEmpty(auth))
+	{
+		//Console.WriteLine("auth:"+auth);
+		client.Headers.Add ("Authorization", "Bearer " + auth);
+	}
+	return client;
+}
+
+// Strava OAuth config
+var redirectUrl = "http://localhost";
+var scope = "view_private";
+
+// Strava API endpoint URLs
+var exchangeUrl = "https://www.strava.com/oauth/token";
+var athleteUrl = "https://www.strava.com/api/v3/athlete";
+var activitiesUrl = "https://www.strava.com/api/v3/athlete/activities";
+var activityUrl = "https://www.strava.com/api/v3/activities/{0}";
+
+// exchangeUrl HTTP-POST parameter list
+string postData { get { return $"client_id={clientId}&client_secret={clientSecret}&code={token}";}}
+```
+
+### Model classes
+
+Strava’s data model is [well-documented](http://strava.github.io/api/ "well-documented"). These C# classes are adorned with correct `JsonProperty` attributes so the Json data returned by the API can be easily deserialized.
+
+```csharp
+class Gear
+{
+	[JsonProperty("id")]
+	public string Id {get;set;}
+	[JsonProperty("primary")]
+	public bool IsPrimary {get;set;}
+	[JsonProperty("name")]
+	public string Name {get;set;}
+	[JsonProperty("distance")]
+	public double Distance {get;set;}
+	[JsonProperty("resource_state")]
+	public int ResourceState {get;set;}
+	
+	public override string ToString()
+	{
+		return $"{Name} {Distance/1000}km";
+	}
+}
+class Athlete
+{
+	[JsonProperty("id")]
+	public int Id {get;set;}
+	[JsonProperty("username")]
+	public string Username {get;set;}
+	[JsonProperty("resource_state")]
+	public int ResourceState {get;set;}
+	[JsonProperty("firstname")]
+	public string FirstName {get;set;}
+	[JsonProperty("lastname")]
+	public string LastName {get;set;}
+	[JsonProperty("profile")]
+	public string ImageUrl {get;set;}
+	
+	[JsonProperty("bikes")]
+	public Gear[] Bikes {get;set;}
+	[JsonProperty("shoes")]
+	public Gear[] Shoes {get;set;}
+	
+	public override string ToString()
+	{
+		return $"{FirstName} {LastName}";
+	}
+}
+class Activity
+{
+	[JsonProperty("id")]
+	public int Id {get;set;}
+	[JsonProperty("name")]
+	public string Name {get;set;}
+	[JsonProperty("description")]
+	public string Description {get;set;}
+	[JsonProperty("distance")]
+	public float Distance {get;set;}
+	[JsonProperty("moving_time")]
+	public int MovingTimeSeconds {get;set;}
+	[JsonProperty("kudos_count")]
+	public int Kudos {get;set;}
+	
+	public override string ToString()
+	{
+		return $"{Name} {Distance/1000}km ({Kudos})";
+	}
+}
+class TokenResponse
+{
+	[JsonProperty("access_token")]
+	public string AccessToken {get;set;}
+	[JsonProperty("token_type")]
+	public string TokenType {get;set;}
+	[JsonProperty("athlete")]
+	public Athlete Athlete {get;set;}
+	
+	public override string ToString()
+	{
+		return $"Use '{AccessToken}' for all subsequent requests for '{Athlete}'";
+	}
+}
+```
+
+### Make a Request
+
+Using the token from the **Settings** page, make a request against the API without going through the login process (which will be required by any apps using the API).
+
+This will only return data for your own Strava account.
+
+```csharp
+Athlete me;
+try
+{
+	WebClient client = StravaClient(token); // uses the default token
+	
+	var response = client.DownloadData (athleteUrl); // no parameters passed
+	var responseString = System.Text.Encoding.UTF8.GetString(response);
+	
+	var js = new JsonSerializer();
+	me = JsonConvert.DeserializeObject<Athlete>(responseString);
+//	Console.WriteLine ("SUCCESS: " + responseString);
+}
+catch (System.Net.WebException e)
+{
+	Console.WriteLine ("FAILED: " + e.Message);
+}
+me
+```
+
+While it is useful for testing, the default token only lets you view **your** Strava data. To build an app for others, we need to allow them to login and use the resulting token to access their data.
+
+## 2.OAuth Login
+
+Any application requiring the user to login to their Strava account and access their own personal data will have to use OAuth. **To simulate that from this workbook, execute the following block and copy the resulting URL into a web browser (like Chrome or Firefox):**
+
+```csharp
+var AuthUrl = $"https://www.strava.com/oauth/authorize?client_id={clientId}&response_type=code&redirect_uri={redirectUrl}&scope={scope}";
+```
+
+The web browser will first present the **Strava login page**, and then once you’ve successfully logged-in, redirect to a blank page (“localhost”) with a URL in the format:
+
+`http://localhost/?state=&code=01234567890abcdef01234567890abcdef`
+
+**Copy the `code` token from the end of that URL in the web browser, and past it below:**
+
+```csharp
+// set the token from the browser's URL field here
+token = "--  INSERT &code= parameter HERE --";  // eg. "01234567890abcdef01234567890abcdef"
+```
+
+Complete the OAuth “exchange” by calling the `exchangeUrl` with this token, and retrieving the `AccessToken` from the response to use with all subsequent requests:
+
+```csharp
+TokenResponse oauthResponse;
+try
+{
+	WebClient client = StravaClient(token); // use token from OAuth web browser login
+	
+	// send postData parameters that MATCH what was sent in the OAuth web login request!
+	var response = client.UploadString (exchangeUrl, "POST", postData); 
+	var responseString = response;
+	
+	var js = new JsonSerializer();
+	oauthResponse = JsonConvert.DeserializeObject<TokenResponse>(responseString);
+//	Console.WriteLine ("SUCCESS: " + responseString);
+}
+catch (System.Net.WebException e)
+{
+	Console.WriteLine ("FAILED: " + e.Message);
+}
+oauthResponse
+```
+
+The response will also include the `Athlete` information - because the token was created by an OAuth web login, the `Athlete` data will reflect the user that logged in.
+
+```csharp
+oauthResponse.Athlete
+```
+
+## 3.List Activities
+
+Using the OAuth token, we can now call different API endpoints to retrieve Strava data on behalf of this user.
+
+```csharp
+Activity[] activityList;
+try
+{
+	WebClient client = StravaClient(oauthResponse.AccessToken); // use the token from the OAuth login exchange
+	
+	var response = client.DownloadData (activitiesUrl); // GET
+	var responseString = System.Text.Encoding.UTF8.GetString(response);
+	
+	var js = new JsonSerializer();
+	activityList = JsonConvert.DeserializeObject<Activity[]>(responseString);
+	//Console.WriteLine ("SUCCESS: " + responseString);
+}
+catch (System.Net.WebException e)
+{
+	Console.WriteLine ("FAILED: " + e.Message);
+}
+activityList
+```
+
+## 4.Get Single Activity
+
+Further requests can be made to drill down into any of the APIs, for example we can choose a specific activity by its identifier:
+
+```csharp
+activityList[0].Id
+```
+
+Making another API call with that `Id` and we can drill down to that `Activity`:
+
+```csharp
+Activity activity;
+var specificActivityUrl = string.Format(activityUrl, activityList[0].Id);
+try
+{
+	WebClient client = StravaClient(oauthResponse.AccessToken); // use the token from the OAuth login exchange
+	
+	var response = client.DownloadData (specificActivityUrl); // GET
+	var responseString = System.Text.Encoding.UTF8.GetString(response);
+	
+	var js = new JsonSerializer();
+	activity = JsonConvert.DeserializeObject<Activity>(responseString);
+	//Console.WriteLine ("SUCCESS: " + responseString);
+}
+catch (System.Net.WebException e)
+{
+	Console.WriteLine ("FAILED: " + e.Message);
+}
+activity
+```
+
+Using this pattern the entire [Strava API](http://strava.github.io/api/ "Strava API") can be explored using C#.
