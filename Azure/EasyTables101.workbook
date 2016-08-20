@@ -1,6 +1,8 @@
-```json
-{"exec-mode":"default","platform":"MacNet45","uti":"com.xamarin.workbook","packages":[]}
-```
+---
+uti: com.xamarin.workbook
+platform: MacNet45
+packages: []
+---
 
 # Playing around with Azure EasyTables
 
@@ -183,7 +185,7 @@ var t = new Todo {Title = "Test row 1", IsDone=false};
 t.ToJson()
 ```
 
-(there are libraries such as System.Json and the Json.NET nuget package that can help with this conversion)
+\(there are libraries such as System.Json and the Json.NET nuget package that can help with this conversion)
 
 ## Insert
 
