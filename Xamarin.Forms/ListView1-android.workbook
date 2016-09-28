@@ -1,6 +1,12 @@
-```json
-{"exec-mode":"default","platform":"Android","uti":"com.xamarin.workbook","packages":[{"id":"Newtonsoft.Json","version":"8.0.3"},{"id":"Xamarin.Forms","version":"2.2.0.31"}]}
-```
+---
+uti: com.xamarin.workbook
+platform: Android
+packages:
+- id: Newtonsoft.Json
+  version: 8.0.3
+- id: Xamarin.Forms
+  version: 2.2.0.31
+---
 
 # Xamarin.Forms REST —> ListView
 
