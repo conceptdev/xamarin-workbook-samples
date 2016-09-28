@@ -1,6 +1,8 @@
-```json
-{"exec-mode":"default","platform":"MacNet45","uti":"com.xamarin.workbook","packages":[]}
-```
+---
+uti: com.xamarin.workbook
+platform: MacNet45
+packages: []
+---
 
 # Azure First Principles
 
