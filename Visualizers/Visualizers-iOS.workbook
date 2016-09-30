@@ -1,0 +1,95 @@
+---
+uti: com.xamarin.workbook
+platform: iOS
+packages: []
+---
+
+# Visualizers
+
+Xamarin Workbooks uses a different visualizers for inline code evaluation results:
+
+* String
+
+* Object
+
+* Color
+
+* Enumerable
+
+* Map
+
+* Image
+
+* Argument
+
+* Html
+
+* Help
+
+By default, the results of a code-block will shown as a string representation of the *last-referenced object* in the block. The `Monkey` class below demonstrates this: when the `rupert` object is assigned, the **ToString** representation is printed after the code-block.
+
+```csharp
+class Monkey { 
+	public string Name;
+	public string Species; 
+	public string Habitat; 
+	public CoreLocation.CLLocation Location = null;
+	public UIColor Color = null;
+	public DateTime Birthday = DateTime.MinValue;
+	public override string ToString(){
+		return $"{Name} the {Species} ({Habitat})"; //C# 6
+	}
+}
+var rupert = new Monkey {Name="Rupert", Species = "Xamarin", Habitat="San Francisco"};
+```
+
+Use the popup menu to the right of the result to switch to the **Object Members** view. Most code-block results in Workbooks will have both **ToString **and **Object Members** display options.
+
+```csharp
+rupert.Color = UIColor.Brown;
+```
+
+```csharp
+rupert.Birthday = new DateTime(2011,05,11);
+```
+
+```csharp
+var enumerable = new List<string> {"alpha", "beta", "gamma", "delta"};
+```
+
+```csharp
+rupert.Location = new CoreLocation.CLLocation(37.7749,-122.4194);
+```
+
+```csharp
+var localPath = "/Users/craigdunn/ProjectsConceptdev/xamarin-workbook-samples/Visualizers/";
+UIImage.FromFile(localPath+"bridge.jpg");
+```
+
+```csharp
+new ArgumentNullException ("name");
+```
+
+```csharp
+var greeting = "Hello, Workbooks";  // C# 6 string interpolation
+$"<html><h2>{greeting}</h2><b>bold</b> <i>italic</i> <u>underline</u></html>".AsHtml()
+```
+
+```csharp
+help
+```
+
+```csharp
+DateTime.Now.ToLongDateString()
+```
+
+```csharp
+CurrentCulture = new System.Globalization.CultureInfo("es");
+DateTime.Now.ToLongDateString()
+```
+
+```csharp
+// reset to English
+CurrentCulture = new System.Globalization.CultureInfo("en");
+```
+
