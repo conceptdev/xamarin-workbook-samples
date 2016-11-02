@@ -1,16 +1,23 @@
-```json
-{"platform":"MacNet45","uti":"com.xamarin.Workbook"}
-```
+---
+uti: com.xamarin.workbook
+platforms:
+- Console
+---
 
 # Using C# 6
 
 Some examples from Xamarin's [intro to C# 6](https://developer.xamarin.com/guides/cross-platform/advanced/csharp_six/).
 
 * Null-conditional operator
+
 * String Interpolation
+
 * Expression-bodied Function Members
+
 * Auto-property Initialization
+
 * Index Initializers
+
 * using static
 
 ## Null-conditional operator
@@ -74,7 +81,6 @@ foreach (var s in values.Select (i => $"The value is {i,10:N2}.")) {
    Console.WriteLine (s);
 }
 ```
-
 
 ## Expression-bodied Function Members
 
@@ -140,12 +146,11 @@ types with a simple object-initializer-like syntax:
 
 ```csharp
 var userInfo = new Dictionary<string,object> {
-    ["Created"] = NSDate.Now,
-    ["Due"] = NSDate.Now.AddSeconds(60 * 60 * 24),
+    ["Created"] = DateTime.Now,
+    ["Due"] = DateTime.Now.AddSeconds(60 * 60 * 24),
     ["Task"] = "buy lettuce"
 };
 ```
-
 
 ## using static
 
@@ -161,8 +166,12 @@ C# 6 code can then reference the static members directly, avoiding
 repetition of the class name (eg. `Math.PI` becomes `PI`):
 
 ```csharp
-using CoreLocation;
-static public double MilesBetween(CLLocationCoordinate2D loc1, CLLocationCoordinate2D loc2)
+public class Location 
+{
+    public Location (double lat, double @long) {Latitude = lat; Longitude = @long;} 
+    public double Latitude = 0; public double Longitude = 0; 
+}
+static public double MilesBetween(Location loc1, Location loc2)
 {
   double rlat1  = PI * loc1.Latitude / 180;
   double rlat2  = PI * loc2.Latitude / 180;
@@ -178,15 +187,6 @@ static public double MilesBetween(CLLocationCoordinate2D loc1, CLLocationCoordin
 }
 ```
 
-
-
 ```csharp
-MilesBetween (new CLLocationCoordinate2D(-12,22), new CLLocationCoordinate2D(-13,33))
-```
-
-```csharp
-// requires El Capitan
-//var sf = await new CLGeocoder().GeocodeAddressAsync("San Francisco, CA");
-//var la = await new CLGeocoder().GeocodeAddressAsync("Los Angeles, CA");
-//MilesBetween (sf, la);
+MilesBetween (new Location(-12,22), new Location(-13,33))
 ```

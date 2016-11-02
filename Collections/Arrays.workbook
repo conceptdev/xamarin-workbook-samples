@@ -1,6 +1,8 @@
-```json
-{"platform":"MacNet45","uti":"com.xamarin.Workbook"}
-```
+---
+uti: com.xamarin.workbook
+platforms:
+- Console
+---
 
 # Collections: Arrays
 

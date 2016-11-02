@@ -1,10 +1,10 @@
 ---
 uti: com.xamarin.workbook
 platforms:
-- iOS
+- Console
 ---
 
-# Visualizers for iOS
+# Visualizers (Console)
 
 Xamarin Workbooks uses a different visualizers for inline code evaluation results:
 
@@ -12,15 +12,9 @@ Xamarin Workbooks uses a different visualizers for inline code evaluation result
 
 * Object
 
-* Color (`UIColor`)
-
 * Enumerable
 
-* Map (`CLLocation`)
-
-* Image (`UIImage`)
-
-* Argument
+* Exception
 
 * Html
 
@@ -29,12 +23,10 @@ Xamarin Workbooks uses a different visualizers for inline code evaluation result
 By default, the results of a code-block will shown as a string representation of the *last-referenced object* in the block. The `Monkey` class below demonstrates this: when the `rupert` object is assigned, the **ToString** representation is printed after the code-block.
 
 ```csharp
-class Monkey { 
+class Monkey {
 	public string Name;
-	public string Species; 
-	public string Habitat; 
-	public CoreLocation.CLLocation Location = null;
-	public UIColor Color = null;
+	public string Species;
+	public string Habitat;
 	public DateTime Birthday = DateTime.MinValue;
 	public override string ToString(){
 		return $"{Name} the {Species} ({Habitat})"; //C# 6
@@ -43,13 +35,7 @@ class Monkey {
 var rupert = new Monkey {Name="Rupert", Species = "Xamarin", Habitat="San Francisco"};
 ```
 
-Use the popup menu to the right of the result to switch to the **Object Members** view. Most code-block results in Workbooks will have both \*\*ToString \*\*and **Object Members** display options.
-
-Color types are rendered with an example of the color:
-
-```csharp
-rupert.Color = UIColor.Brown;
-```
+Use the popup menu to the right of the result to switch to the **Object Members** view. Most code-block results in Workbooks will have both **ToString** and **Object Members** display options.
 
 DateTime values have a number of display options, including a calendar view:
 
@@ -61,19 +47,6 @@ Enumerable collections will be expanded so that you can explore their contents. 
 
 ```csharp
 var enumerable = new List<string> {"alpha", "beta", "gamma", "delta"};
-```
-
-Location objects can be viewed on a map:
-
-```csharp
-rupert.Location = new CoreLocation.CLLocation(37.7749,-122.4194);
-```
-
-Image data can be downloaded or opened from the local filesystem, then previewed inline with the **Image** view:
-
-```csharp
-var localPath = "/Users/craigdunn/ProjectsConceptdev/xamarin-workbook-samples/Visualizers/";
-UIImage.FromFile(localPath+"bridge.jpg");
 ```
 
 Exceptions have a custom display:

@@ -43,7 +43,7 @@ class Monkey {
 var rupert = new Monkey {Name="Rupert", Species = "Xamarin", Habitat="San Francisco"};
 ```
 
-Use the popup menu to the right of the result to switch to the **Object Members** view. Most code-block results in Workbooks will have both \*\*ToString \*\*and **Object Members** display options.
+Use the popup menu to the right of the result to switch to the **Object Members** view. Most code-block results in Workbooks will have both **ToString** and **Object Members** display options.
 
 Color types are rendered with an example of the color:
 
@@ -110,4 +110,3 @@ DateTime.Now.ToLongDateString()
 // reset to English
 CurrentCulture = new System.Globalization.CultureInfo("en");
 ```
-
