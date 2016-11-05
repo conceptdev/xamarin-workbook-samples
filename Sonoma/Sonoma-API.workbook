@@ -10,7 +10,7 @@ packages:
 # Sonoma API
 
 Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) to see what you can do!
-To start with, enter your login credentials here (NOT your Github credentials, they won't work here):
+To start with, enter your login credentials (NOT your Github credentials, they won't work here):
 
 ```csharp
 var username = "EMAIL_ADDRESS";
@@ -34,15 +34,8 @@ using System.Net;
 using System.Text;
 using System.IO;
 
-//NetworkCredential nc = new NetworkCredential(username, password);
-//CredentialCache cc = new CredentialCache();
-//cc.Add("api.sonoma.hockeyapp.com", 443, "Basic", nc);
-
 WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/api_tokens");
-//request.Credentials = cc;
-//request.Credentials = new NetworkCredential(username, password);
 request.Headers["Authorization"] = "Basic " + authInfo;
-//request.PreAuthenticate = true;
 request.Method = "POST";
 request.ContentType="application/json"; 
 
@@ -84,7 +77,7 @@ using (var jsonReader = new JsonTextReader(reader))
 token
 ```
 
-Woohoo! Now we can use the api_token in subsequent requests to the API.
+Woohoo! Now we can use the `api_token` in subsequent requests to the API.
 
 ## User Profile
 
@@ -105,6 +98,7 @@ public class UserProfileResponse
 then using the API Token in the `X-API-Token` header, make a request to retrieve the user profile
 
 ```WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
+request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
 request.Headers["X-API-Token"] = token.api_token;
 request.Method = "GET";
 request.ContentType="application/json"; 
@@ -121,3 +115,55 @@ using (var jsonReader = new JsonTextReader(reader))
 profile
 ```
 
+## Apps List
+
+Once again using Swagger as a guide, create a class to populate with API data:
+
+```csharp
+public class AppResponse
+{
+  public string id {get;set;}
+  public string app_secret {get;set;}
+  public string description {get;set;}
+  public string display_name {get;set;}
+  public string name {get;set;}
+  public string platform {get;set;}
+  public string language {get;set;}
+  public string icon_url {get;set;}
+  // ignoring owner info for now
+  public string azure_subscription_id {get;set;}
+}
+public class AppsResponse
+{
+  public AppResponse[] Apps {get;set;}
+}
+```
+
+then using the API Token in the `X-API-Token` header, make a request to retrieve the app list
+
+```WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
+request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/apps");
+request.Headers["X-API-Token"] = token.api_token;
+request.Method = "GET";
+request.ContentType="application/json"; 
+
+response = request.GetResponse();
+AppResponse[] apps = null;
+using (var stream = response.GetResponseStream())
+using (var reader = new StreamReader (stream))
+using (var jsonReader = new JsonTextReader(reader))
+{
+    var serializer = new JsonSerializer();
+    apps = serializer.Deserialize<AppResponse[]> (jsonReader);
+}
+apps
+```
+
+```csharp
+apps[0]
+```
+
+## Next steps…
+
+Using variations on the above code you can easily build up interactions with the Sonoma API,
+including reporting or managing apps and services. Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) for the complete list of operations available.
