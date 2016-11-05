@@ -30,9 +30,9 @@ First, register at [strava.com/settings/api](https://www.strava.com/settings/api
 Copy the details (click *show* to revel the secret and token) into the fields below:
 
 ```csharp
-var clientId =     "CLIENT_ID";
-var clientSecret = "SECRET_HERE";
-var token =        "TOKEN_HERE";    // allows access to "YOUR public data only"
+var clientId =     "12967";
+var clientSecret = "3084123341f06979eae7564ae5277d14f75958e2";
+var token =        "eec6d4fafb5d902edec76eafc47288fb3f0297c6";    // allows access to "YOUR public data only"
 
 // refer to the API documentation before changing these OAuth constants
 var redirectUrl = "http://localhost";
@@ -201,7 +201,7 @@ The web browser will first present the **Strava login page**, and then once you�
 
 ```csharp
 // set the token from the browser's URL field here
-token = "--  INSERT &code= parameter HERE --";  // eg. "01234567890abcdef01234567890abcdef"
+token = "181d3153f6260f39b3f31286fa6e8db40958618e";  // eg. "01234567890abcdef01234567890abcdef"
 ```
 
 Complete the OAuth “exchange” by calling the `exchangeUrl` with this token, and retrieving the `AccessToken` from the response to use with all subsequent requests:
