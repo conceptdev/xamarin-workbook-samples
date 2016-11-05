@@ -30,9 +30,9 @@ First, register at [strava.com/settings/api](https://www.strava.com/settings/api
 Copy the details (click *show* to revel the secret and token) into the fields below:
 
 ```csharp
-var clientId =     "12967";
-var clientSecret = "3084123341f06979eae7564ae5277d14f75958e2";
-var token =        "eec6d4fafb5d902edec76eafc47288fb3f0297c6";    // allows access to "YOUR public data only"
+var clientId =     "CLIENT_ID";
+var clientSecret = "SECRET_HERE";
+var token =        "TOKEN_HERE";    // allows access to "YOUR public data only"
 
 // refer to the API documentation before changing these OAuth constants
 var redirectUrl = "http://localhost";

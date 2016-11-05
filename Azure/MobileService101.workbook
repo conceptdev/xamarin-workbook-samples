@@ -1,7 +1,7 @@
 ---
 uti: com.xamarin.workbook
-platform: MacNet45
-packages: []
+platforms:
+- MacNet45
 ---
 
 # Azure First Principles

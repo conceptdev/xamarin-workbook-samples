@@ -1,6 +1,7 @@
 ---
 uti: com.xamarin.workbook
-platform: MacNet45
+platforms:
+- MacNet45
 packages:
 - id: Newtonsoft.Json
   version: 9.0.1
