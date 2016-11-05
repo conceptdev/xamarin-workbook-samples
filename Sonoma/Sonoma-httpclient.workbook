@@ -13,8 +13,8 @@ Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) to se
 To start with, enter your login credentials (NOT your Github credentials, they won't work here):
 
 ```csharp
-var username = "craig.dunn@gmail.com";
-var password = "XamEvolve!!";
+var username = "EMAIL_ADDRESS";
+var password = "PASSWORD";
 ```
 
 ## Authorize
@@ -159,4 +159,3 @@ apps[0]
 
 Using variations on the above code you can easily build up interactions with the Sonoma API,
 including reporting or managing apps and services. Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) for the complete list of operations available.
-
