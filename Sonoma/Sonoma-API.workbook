@@ -1,0 +1,123 @@
+---
+uti: com.xamarin.workbook
+platforms:
+- Console
+packages:
+- id: Newtonsoft.Json
+  version: 8.0.3
+---
+
+# Sonoma API
+
+Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) to see what you can do!
+To start with, enter your login credentials here (NOT your Github credentials, they won't work here):
+
+```csharp
+var username = "EMAIL_ADDRESS";
+var password = "PASSWORD";
+```
+
+## Authorize
+
+Before using the API, your login credentials are required to obtain an API token
+that will be used to authorize subsequent requests.
+
+```csharp
+using System.Text;
+string authInfo = username + ":" + password;
+authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+```
+
+```csharp
+using System.Web;
+using System.Net;
+using System.Text;
+using System.IO;
+
+//NetworkCredential nc = new NetworkCredential(username, password);
+//CredentialCache cc = new CredentialCache();
+//cc.Add("api.sonoma.hockeyapp.com", 443, "Basic", nc);
+
+WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/api_tokens");
+//request.Credentials = cc;
+//request.Credentials = new NetworkCredential(username, password);
+request.Headers["Authorization"] = "Basic " + authInfo;
+//request.PreAuthenticate = true;
+request.Method = "POST";
+request.ContentType="application/json"; 
+
+// fill in other request properties here, like content
+ASCIIEncoding encoding=new ASCIIEncoding();
+string stringData = "{}"; //place body here
+byte[] data = encoding.GetBytes(stringData);
+Stream newStream = request.GetRequestStream();
+newStream.Write(data,0,data.Length);
+newStream.Close();
+
+WebResponse response = request.GetResponse();
+```
+
+Create a class (using the Swagger Json documentation as a guide) to deserialize the response:
+
+```csharp
+public class ApiTokenResponse
+{
+  public string id {get;set;}
+  public string created_at {get;set;}
+  public string api_token {get;set;}
+}
+```
+
+Now deserialize the response into that class
+
+```csharp
+#r "Newtonsoft.Json"
+using Newtonsoft.Json;
+ApiTokenResponse token = null;
+using (var stream = response.GetResponseStream())
+using (var reader = new StreamReader (stream))
+using (var jsonReader = new JsonTextReader(reader))
+{
+    var serializer = new JsonSerializer();
+    token = serializer.Deserialize<ApiTokenResponse> (jsonReader);
+}
+token
+```
+
+Woohoo! Now we can use the api_token in subsequent requests to the API.
+
+## User Profile
+
+Once again using Swagger as a guide, create a class to populate with API data:
+
+```csharp
+public class UserProfileResponse
+{
+  public string id {get;set;}
+  public string email {get;set;}
+  public string display_name {get;set;}
+  public string name {get;set;}
+  public string avatar_url {get;set;}
+  public bool can_change_password {get;set;}
+}
+```
+
+then using the API Token in the `X-API-Token` header, make a request to retrieve the user profile
+
+```WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
+request.Headers["X-API-Token"] = token.api_token;
+request.Method = "GET";
+request.ContentType="application/json"; 
+
+response = request.GetResponse();
+UserProfileResponse profile = null;
+using (var stream = response.GetResponseStream())
+using (var reader = new StreamReader (stream))
+using (var jsonReader = new JsonTextReader(reader))
+{
+    var serializer = new JsonSerializer();
+    profile = serializer.Deserialize<UserProfileResponse> (jsonReader);
+}
+profile
+```
+
