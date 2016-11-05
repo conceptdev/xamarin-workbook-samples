@@ -1,6 +1,7 @@
 ---
 uti: com.xamarin.workbook
-platform: MacMobile
+platforms:
+- MacMobile
 packages:
 - id: Newtonsoft.Json
   version: 9.0.1
@@ -29,9 +30,9 @@ First, register at [strava.com/settings/api](https://www.strava.com/settings/api
 Copy the details (click *show* to revel the secret and token) into the fields below:
 
 ```csharp
-var clientId =     "Client ID HERE";
-var clientSecret = "Client Secret HERE";
-var token =        "Your Access Token HERE";    // allows access to "YOUR public data only"
+var clientId =     "CLIENT_ID";
+var clientSecret = "SECRET_HERE";
+var token =        "TOKEN_HERE";    // allows access to "YOUR public data only"
 
 // refer to the API documentation before changing these OAuth constants
 var redirectUrl = "http://localhost";
