@@ -1,0 +1,162 @@
+---
+uti: com.xamarin.workbook
+platforms:
+- Console
+packages:
+- id: Newtonsoft.Json
+  version: 8.0.3
+---
+
+# Sonoma API (HttpClient)
+
+Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) to see what you can do!
+To start with, enter your login credentials (NOT your Github credentials, they won't work here):
+
+```csharp
+var username = "craig.dunn@gmail.com";
+var password = "XamEvolve!!";
+```
+
+## Authorize
+
+Before using the API, your login credentials are required to obtain an API token
+that will be used to authorize subsequent requests.
+
+```csharp
+using System.Text;
+string authInfo = username + ":" + password;
+authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+```
+
+```csharp
+#r "System.Net.Http"
+using System.Web;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.IO;
+
+string response = "";
+using (var client = new HttpClient())
+{
+    client.BaseAddress = new Uri("https://api.sonoma.hockeyapp.com");
+    var content = new StringContent("{}", Encoding.UTF8, "application/json"); // CONTENT-TYPE
+    client.DefaultRequestHeaders
+      .Accept
+      .Add(new MediaTypeWithQualityHeaderValue("application/json"));//ACCEPT header
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authInfo);
+
+    var result = await client.PostAsync("/v0.1/api_tokens", content);
+    response = await result.Content.ReadAsStringAsync();
+}
+response
+```
+
+Create a class (using the Swagger Json documentation as a guide) to deserialize the response:
+
+```csharp
+public class ApiTokenResponse
+{
+  public string id {get;set;}
+  public string created_at {get;set;}
+  public string api_token {get;set;}
+}
+```
+
+Now deserialize the response into that class
+
+```csharp
+#r "Newtonsoft.Json"
+using Newtonsoft.Json;
+
+var token = JsonConvert.DeserializeObject<ApiTokenResponse> (response);
+token
+```
+
+Woohoo! Now we can use the `api_token` in subsequent requests to the API.
+
+## User Profile
+
+Once again using Swagger as a guide, create a class to populate with API data:
+
+```csharp
+public class UserProfileResponse
+{
+  public string id {get;set;}
+  public string email {get;set;}
+  public string display_name {get;set;}
+  public string name {get;set;}
+  public string avatar_url {get;set;}
+  public bool can_change_password {get;set;}
+}
+```
+
+then using the API Token in the `X-API-Token` header, make a request to retrieve the user profile
+
+```csharp
+string response = "";
+using (var client = new HttpClient())
+{
+    client.BaseAddress = new Uri("https://api.sonoma.hockeyapp.com");
+    client.DefaultRequestHeaders
+      .Accept
+      .Add(new MediaTypeWithQualityHeaderValue("application/json"));//ACCEPT header
+    client.DefaultRequestHeaders.Add("X-API-Token", token.api_token);
+
+    var result = await client.GetAsync("/v0.1/user");
+    response = await result.Content.ReadAsStringAsync();
+}
+
+var profile = JsonConvert.DeserializeObject<UserProfileResponse> (response);
+profile
+```
+
+## Apps List
+
+Once again using Swagger as a guide, create a class to populate with API data:
+
+```csharp
+public class AppResponse
+{
+  public string id {get;set;}
+  public string app_secret {get;set;}
+  public string description {get;set;}
+  public string display_name {get;set;}
+  public string name {get;set;}
+  public string platform {get;set;}
+  public string language {get;set;}
+  public string icon_url {get;set;}
+  // ignoring owner info for now
+  public string azure_subscription_id {get;set;}
+}
+```
+
+then using the API Token in the `X-API-Token` header, make a request to retrieve the app list
+
+```csharp
+using (var client = new HttpClient())
+{
+    client.BaseAddress = new Uri("https://api.sonoma.hockeyapp.com");
+    client.DefaultRequestHeaders
+      .Accept
+      .Add(new MediaTypeWithQualityHeaderValue("application/json"));//ACCEPT header
+    client.DefaultRequestHeaders.Add("X-API-Token", token.api_token);
+
+    var result = await client.GetAsync("/v0.1/apps");
+    response = await result.Content.ReadAsStringAsync();
+}
+
+var apps = JsonConvert.DeserializeObject<AppResponse[]> (response);
+apps
+```
+
+```csharp
+apps[0]
+```
+
+## Next steps…
+
+Using variations on the above code you can easily build up interactions with the Sonoma API,
+including reporting or managing apps and services. Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) for the complete list of operations available.
+
