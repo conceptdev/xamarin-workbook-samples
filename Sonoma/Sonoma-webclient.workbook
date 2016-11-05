@@ -7,7 +7,7 @@ packages:
   version: 8.0.3
 ---
 
-# Sonoma API
+# Sonoma API (WebClient)
 
 Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) to see what you can do!
 To start with, enter your login credentials (NOT your Github credentials, they won't work here):
@@ -34,20 +34,11 @@ using System.Net;
 using System.Text;
 using System.IO;
 
-WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/api_tokens");
-request.Headers["Authorization"] = "Basic " + authInfo;
-request.Method = "POST";
-request.ContentType="application/json"; 
-
-// fill in other request properties here, like content
-ASCIIEncoding encoding=new ASCIIEncoding();
-string stringData = "{}"; //place body here
-byte[] data = encoding.GetBytes(stringData);
-Stream newStream = request.GetRequestStream();
-newStream.Write(data,0,data.Length);
-newStream.Close();
-
-WebResponse response = request.GetResponse();
+WebClient client = new WebClient();
+client.Headers.Add (HttpRequestHeader.Accept, "application/json");
+client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
+client.Headers.Add ("Authorization", "Basic " + authInfo);
+var response = client.UploadString (new Uri("https://api.sonoma.hockeyapp.com/v0.1/api_tokens"), "POST", "{}");
 ```
 
 Create a class (using the Swagger Json documentation as a guide) to deserialize the response:
@@ -66,14 +57,8 @@ Now deserialize the response into that class
 ```csharp
 #r "Newtonsoft.Json"
 using Newtonsoft.Json;
-ApiTokenResponse token = null;
-using (var stream = response.GetResponseStream())
-using (var reader = new StreamReader (stream))
-using (var jsonReader = new JsonTextReader(reader))
-{
-    var serializer = new JsonSerializer();
-    token = serializer.Deserialize<ApiTokenResponse> (jsonReader);
-}
+
+var token = JsonConvert.DeserializeObject<ApiTokenResponse> (response);
 token
 ```
 
@@ -97,21 +82,16 @@ public class UserProfileResponse
 
 then using the API Token in the `X-API-Token` header, make a request to retrieve the user profile
 
-```WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
-request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
-request.Headers["X-API-Token"] = token.api_token;
-request.Method = "GET";
-request.ContentType="application/json"; 
+```csharp
+WebClient client = new WebClient();
+client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
+client.Headers.Add (HttpRequestHeader.Accept, "application/json");
+client.Headers.Add ("X-API-Token", token.api_token);
+var response = client.DownloadData (new Uri("https://api.sonoma.hockeyapp.com/v0.1/user")); 
 
-response = request.GetResponse();
-UserProfileResponse profile = null;
-using (var stream = response.GetResponseStream())
-using (var reader = new StreamReader (stream))
-using (var jsonReader = new JsonTextReader(reader))
-{
-    var serializer = new JsonSerializer();
-    profile = serializer.Deserialize<UserProfileResponse> (jsonReader);
-}
+var responseString = System.Text.Encoding.UTF8.GetString(response);
+var profile = JsonConvert.DeserializeObject<UserProfileResponse> (responseString);
+
 profile
 ```
 
@@ -141,21 +121,16 @@ public class AppsResponse
 
 then using the API Token in the `X-API-Token` header, make a request to retrieve the app list
 
-```WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
-request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/apps");
-request.Headers["X-API-Token"] = token.api_token;
-request.Method = "GET";
-request.ContentType="application/json"; 
+```csharp
+WebClient client = new WebClient();
+client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
+client.Headers.Add (HttpRequestHeader.Accept, "application/json");
+client.Headers.Add ("X-API-Token", token.api_token);
+var response = client.DownloadData (new Uri("https://api.sonoma.hockeyapp.com/v0.1/apps")); 
 
-response = request.GetResponse();
-AppResponse[] apps = null;
-using (var stream = response.GetResponseStream())
-using (var reader = new StreamReader (stream))
-using (var jsonReader = new JsonTextReader(reader))
-{
-    var serializer = new JsonSerializer();
-    apps = serializer.Deserialize<AppResponse[]> (jsonReader);
-}
+var responseString = System.Text.Encoding.UTF8.GetString(response);
+var apps = JsonConvert.DeserializeObject<AppResponse[]> (responseString);
+
 apps
 ```
 
