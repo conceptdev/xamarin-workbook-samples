@@ -1,6 +1,7 @@
 ---
 uti: com.xamarin.workbook
 platforms:
+- iOS
 - Console
 packages:
 - id: Newtonsoft.Json
@@ -30,7 +31,6 @@ authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
 
 ```csharp
 #r "System.Net.Http"
-using System.Web;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;

@@ -1,6 +1,7 @@
 ---
 uti: com.xamarin.workbook
 platforms:
+- iOS
 - Console
 packages:
 - id: Newtonsoft.Json
@@ -29,7 +30,6 @@ authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
 ```
 
 ```csharp
-using System.Web;
 using System.Net;
 using System.Text;
 using System.IO;
@@ -87,7 +87,7 @@ WebClient client = new WebClient();
 client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
 client.Headers.Add (HttpRequestHeader.Accept, "application/json");
 client.Headers.Add ("X-API-Token", token.api_token);
-var response = client.DownloadData (new Uri("https://api.sonoma.hockeyapp.com/v0.1/user")); 
+var response = client.DownloadData (new Uri("https://api.sonoma.hockeyapp.com/v0.1/user"));
 
 var responseString = System.Text.Encoding.UTF8.GetString(response);
 var profile = JsonConvert.DeserializeObject<UserProfileResponse> (responseString);
@@ -126,7 +126,7 @@ WebClient client = new WebClient();
 client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
 client.Headers.Add (HttpRequestHeader.Accept, "application/json");
 client.Headers.Add ("X-API-Token", token.api_token);
-var response = client.DownloadData (new Uri("https://api.sonoma.hockeyapp.com/v0.1/apps")); 
+var response = client.DownloadData (new Uri("https://api.sonoma.hockeyapp.com/v0.1/apps"));
 
 var responseString = System.Text.Encoding.UTF8.GetString(response);
 var apps = JsonConvert.DeserializeObject<AppResponse[]> (responseString);

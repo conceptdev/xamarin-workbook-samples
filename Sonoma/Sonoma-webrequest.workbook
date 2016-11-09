@@ -1,6 +1,7 @@
 ---
 uti: com.xamarin.workbook
 platforms:
+- iOS
 - Console
 packages:
 - id: Newtonsoft.Json
@@ -29,7 +30,6 @@ authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
 ```
 
 ```csharp
-using System.Web;
 using System.Net;
 using System.Text;
 using System.IO;
@@ -37,7 +37,7 @@ using System.IO;
 WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/api_tokens");
 request.Headers["Authorization"] = "Basic " + authInfo;
 request.Method = "POST";
-request.ContentType="application/json"; 
+request.ContentType="application/json";
 
 // fill in other request properties here, like content
 ASCIIEncoding encoding=new ASCIIEncoding();
@@ -101,7 +101,7 @@ then using the API Token in the `X-API-Token` header, make a request to retrieve
 request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
 request.Headers["X-API-Token"] = token.api_token;
 request.Method = "GET";
-request.ContentType="application/json"; 
+request.ContentType="application/json";
 
 response = request.GetResponse();
 UserProfileResponse profile = null;
@@ -145,7 +145,7 @@ then using the API Token in the `X-API-Token` header, make a request to retrieve
 request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/apps");
 request.Headers["X-API-Token"] = token.api_token;
 request.Method = "GET";
-request.ContentType="application/json"; 
+request.ContentType="application/json";
 
 response = request.GetResponse();
 AppResponse[] apps = null;
