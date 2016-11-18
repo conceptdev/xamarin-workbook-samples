@@ -8,9 +8,9 @@ packages:
   version: 8.0.3
 ---
 
-# Sonoma API (WebClient)
+# Mobile Center API (WebClient)
 
-Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) to see what you can do!
+Check out the [Mobile Center API Swagger](https://docs.mobile.azure.com/api/) to see what you can do!
 To start with, enter your login credentials (NOT your Github credentials, they won't work here):
 
 ```csharp
@@ -38,7 +38,7 @@ WebClient client = new WebClient();
 client.Headers.Add (HttpRequestHeader.Accept, "application/json");
 client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
 client.Headers.Add ("Authorization", "Basic " + authInfo);
-var response = client.UploadString (new Uri("https://api.sonoma.hockeyapp.com/v0.1/api_tokens"), "POST", "{}");
+var response = client.UploadString (new Uri("https://api.mobile.azure.com/v0.1/api_tokens"), "POST", "{}");
 ```
 
 Create a class (using the Swagger Json documentation as a guide) to deserialize the response:
@@ -87,7 +87,7 @@ WebClient client = new WebClient();
 client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
 client.Headers.Add (HttpRequestHeader.Accept, "application/json");
 client.Headers.Add ("X-API-Token", token.api_token);
-var response = client.DownloadData (new Uri("https://api.sonoma.hockeyapp.com/v0.1/user"));
+var response = client.DownloadData (new Uri("https://api.mobile.azure.com/v0.1/user"));
 
 var responseString = System.Text.Encoding.UTF8.GetString(response);
 var profile = JsonConvert.DeserializeObject<UserProfileResponse> (responseString);
@@ -126,7 +126,7 @@ WebClient client = new WebClient();
 client.Headers.Add (HttpRequestHeader.ContentType, "application/json");
 client.Headers.Add (HttpRequestHeader.Accept, "application/json");
 client.Headers.Add ("X-API-Token", token.api_token);
-var response = client.DownloadData (new Uri("https://api.sonoma.hockeyapp.com/v0.1/apps"));
+var response = client.DownloadData (new Uri("https://api.mobile.azure.com/v0.1/apps"));
 
 var responseString = System.Text.Encoding.UTF8.GetString(response);
 var apps = JsonConvert.DeserializeObject<AppResponse[]> (responseString);
@@ -140,5 +140,5 @@ apps[0]
 
 ## Next steps…
 
-Using variations on the above code you can easily build up interactions with the Sonoma API,
-including reporting or managing apps and services. Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) for the complete list of operations available.
+Using variations on the above code you can easily build up interactions with the Mobile Center API,
+including reporting or managing apps and services. Check out the [Mobile Center API Swagger](https://docs.mobile.azure.com/api/) for the complete list of operations available.

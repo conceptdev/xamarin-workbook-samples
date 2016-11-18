@@ -8,9 +8,9 @@ packages:
   version: 8.0.3
 ---
 
-# Sonoma API (WebRequest)
+# Mobile Center API (WebRequest)
 
-Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) to see what you can do!
+Check out the [Mobile Center API Swagger](https://docs.mobile.azure.com/api/) to see what you can do!
 To start with, enter your login credentials (NOT your Github credentials, they won't work here):
 
 ```csharp
@@ -34,7 +34,7 @@ using System.Net;
 using System.Text;
 using System.IO;
 
-WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/api_tokens");
+WebRequest request = WebRequest.Create("https://api.mobile.azure.com/v0.1/api_tokens");
 request.Headers["Authorization"] = "Basic " + authInfo;
 request.Method = "POST";
 request.ContentType="application/json";
@@ -97,8 +97,8 @@ public class UserProfileResponse
 
 then using the API Token in the `X-API-Token` header, make a request to retrieve the user profile
 
-```WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
-request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
+```WebRequest request = WebRequest.Create("https://api.mobile.azure.com/v0.1/user");
+request = WebRequest.Create("https://api.mobile.azure.com/v0.1/user");
 request.Headers["X-API-Token"] = token.api_token;
 request.Method = "GET";
 request.ContentType="application/json";
@@ -141,8 +141,8 @@ public class AppsResponse
 
 then using the API Token in the `X-API-Token` header, make a request to retrieve the app list
 
-```WebRequest request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/user");
-request = WebRequest.Create("https://api.sonoma.hockeyapp.com/v0.1/apps");
+```WebRequest request = WebRequest.Create("https://api.mobile.azure.com/v0.1/user");
+request = WebRequest.Create("https://api.mobile.azure.com/v0.1/apps");
 request.Headers["X-API-Token"] = token.api_token;
 request.Method = "GET";
 request.ContentType="application/json";
@@ -165,5 +165,5 @@ apps[0]
 
 ## Next steps…
 
-Using variations on the above code you can easily build up interactions with the Sonoma API,
-including reporting or managing apps and services. Check out the [Sonoma API Swagger](https://docs.sonoma.hockeyapp.com/api/) for the complete list of operations available.
+Using variations on the above code you can easily build up interactions with the Mobile Center API,
+including reporting or managing apps and services. Check out the [Mobile Center API Swagger](https://docs.mobile.azure.com/api/) for the complete list of operations available.
