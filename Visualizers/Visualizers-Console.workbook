@@ -83,3 +83,36 @@ DateTime.Now.ToLongDateString()
 // reset to English
 CurrentCulture = new System.Globalization.CultureInfo("en");
 ```
+
+## Custom “Rendering” in the Result Cell
+
+In addition to the results of a cell being represented as a string, it’s also possible to create a custom representation for a type. The code would included in an external **.csx** file.
+
+Begin by referencing this namespace:
+
+```csharp
+using XIR = Xamarin.Interactive.Representations;
+```
+
+To add the custom “renderer”, use the `AddProvider` method, specifying
+
+```csharp
+InteractiveAgent.RepresentationManager.AddProvider<Monkey> (mk => {
+    // HTML output
+    return $"<b>{mk.Name}</b> the {mk.Species} monkey lives in <i>{mk.Habitat}</li>".AsHtml();    
+});
+InteractiveAgent.RepresentationManager.AddProvider<Monkey> (mk => {
+    // Plain Text output
+    return $"{mk.Name} - {mk.Species} monkey ({mk.Habitat})";    
+});
+// now any Monkey class is represented by these providers in the workbook.
+// multiple providers can be added, and chosen by the reader in the result cell menu
+```
+
+Using the `Monkey` object created earlier, choose different result renders from the menu in the result cell:
+
+```csharp
+rupert
+```
+
+> ⚠️ NOTE: because the provider is added each time that code cell is run, duplicate providers will be added if the cell is re-run. Place this code in a **.csx** file for best results.
