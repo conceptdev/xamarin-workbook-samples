@@ -1,0 +1,70 @@
+---
+uti: com.xamarin.workbook
+platforms:
+- WPF
+---
+
+# WPF Permission Test
+
+A customer at MVP Summit was getting a **Permission Denied** error in a workbook. Trying to reproduce the problem here (although it seems to work fine for me - the customer may have been using the path incorrectly?)
+
+```csharp
+var path1 = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+path1
+```
+
+```csharp
+var path2 = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+path2
+```
+
+```csharp
+System.IO.File.WriteAllText (path1 + @"\test1.txt", "This is a test 1");
+```
+
+```csharp
+System.IO.File.WriteAllText (path2 + @"\test2.txt", "This is a test 2");
+```
+
+```csharp
+var contents1 = System.IO.File.ReadAllText (path1 + @"\test1.txt");
+contents1
+```
+
+```csharp
+var contents2 = System.IO.File.ReadAllText (path2 + @"\test2.txt");
+contents2
+```
+
+Hmm that’s a bit repetitive, so make a helper method:
+
+```csharp
+void Test (System.Environment.SpecialFolder envPath, string text)
+{
+    var testPath = Environment.GetFolderPath(envPath);
+    try 
+    { 
+        Console.Write ("Testing " + testPath);
+        System.IO.File.WriteAllText (testPath + @"\test-wpf-permissions.txt", text);
+        Console.WriteLine (" ... saved");
+        //var contents = System.IO.File.ReadAllText (envPath + @"\testest-wpf-permissionst2.txt");
+    } catch (Exception e) {
+        Console.WriteLine ("... errored " + e.Message);
+    }
+}
+```
+
+Test some others from [MSDN](https://msdn.microsoft.com/en-us/library/system.environment.specialfolder(v=vs.110).aspx) … `C:\WINDOWS` and `C:\WINDOWS\System32` fail (as you’d expect)
+
+```csharp
+Test (Environment.SpecialFolder.Personal,"Personal");
+Test (Environment.SpecialFolder.MyDocuments,"MyDocuments");
+Test (Environment.SpecialFolder.Desktop,"Desktop");
+Test (Environment.SpecialFolder.CommonDocuments,"CommonDocuments");
+Test (Environment.SpecialFolder.CommonPictures,"CommonPictures");
+Test (Environment.SpecialFolder.UserProfile,"UserProfile");
+Test (Environment.SpecialFolder.System,"System"); // fails as expected
+Test (Environment.SpecialFolder.Windows,"Windows"); // fails as expected
+```
+
+Search for **test-wpf-permissions.txt** to delete the temp files.
